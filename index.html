@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMM2 TOP100 Levels & Leaderboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-yellow: #FFD700;
+            --dark-yellow: #FFC107;
+            --darker-yellow: #FFB300;
+            --text-black: #000000;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-yellow);
+            color: var(--text-black);
+            line-height: 1.6;
+        }
+
+        /* Header & Navigation */
+        header {
+            background-color: var(--darker-yellow);
+            padding: 1rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            color: var(--text-black);
+        }
+
+        .last-updated {
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        nav li {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        nav a {
+            display: block;
+            color: var(--text-black);
+            text-decoration: none;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        nav a i {
+            margin-right: 8px;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 0;
+            min-height: 70vh;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-black);
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: var(--text-black);
+        }
+
+        /* Loading & Error States */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 3rem;
+            background-color: rgba(255, 0, 0, 0.1);
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        /* Cards & Tables */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background-color: rgba(255, 193, 7, 0.3);
+            font-weight: 700;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 193, 7, 0.2);
+        }
+
+        /* List Page Specific */
+        .level-row {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .level-row:hover {
+            transform: translateX(5px);
+        }
+
+        .level-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .level-creator {
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .level-points {
+            font-weight: 700;
+            color: #000;
+        }
+
+        .level-genre {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .genre-kaizo { background-color: #ff6b6b; }
+        .genre-speedrun { background-color: #4ecdc4; }
+        .genre-precision { background-color: #45b7d1; }
+        .genre-juggle { background-color: #96ceb4; }
+        .genre-other { background-color: #795548; }
+
+        .level-code {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .level-code:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Search & Filter */
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box, .filter-select {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 15px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            background-color: white;
+            font-size: 1rem;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            background-color: var(--dark-yellow);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .pagination button.active {
+            background-color: var(--darker-yellow);
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: rgba(255, 179, 0, 0.8);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* About & Social Pages */
+        .info-section {
+            margin-bottom: 2rem;
+        }
+
+        .info-section h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.4rem;
+        }
+
+        .info-section ul, .info-section ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--card-bg);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-black);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .social-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .social-link i {
+            font-size: 1.8rem;
+        }
+
+        .social-discord { background-color: #7289da; color: white; }
+        .social-youtube { background-color: #ff0000; color: white; }
+        .social-twitter { background-color: #1da1f2; color: white; }
+
+        /* Footer */
+        footer {
+            background-color: var(--darker-yellow);
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-black);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .copyright {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo-area {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav li {
+                min-width: 100%;
+            }
+            
+            .search-filter {
+                flex-direction: column;
+            }
+            
+            .search-box, .filter-select {
+                min-width: 100%;
+            }
+            
+            .social-link {
+                min-width: 100%;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            th, td {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pagination {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pagination button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo-area">
+                <div class="logo">
+                    <i class="fas fa-trophy"></i>
+                    <h1>SMM2 TOP100</h1>
+                </div>
+                <div class="last-updated" id="lastUpdated">
+                    Loading...
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-page="list"><i class="fas fa-list-ol"></i> Top 100 List</a></li>
+                    <li><a href="#" class="nav-link" data-page="leaderboard"><i class="fas fa-medal"></i> Leaderboard</a></li>
+                    <li><a href="#" class="nav-link" data-page="about"><i class="fas fa-info-circle"></i> About</a></li>
+                    <li><a href="#" class="nav-link" data-page="discord"><i class="fab fa-discord"></i> Discord</a></li>
+                    <li><a href="#" class="nav-link" data-page="social"><i class="fas fa-share-alt"></i> Social Media</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Top 100 List Page -->
+        <section id="list" class="page active">
+            <h2><i class="fas fa-crown"></i> Top 100 Most Difficult Levels</h2>
+            
+            <div class="search-filter">
+                <input type="text" id="searchLevel" class="search-box" placeholder="Search levels by name or creator...">
+                <select id="filterGenre" class="filter-select">
+                    <option value="">All Genres</option>
+                    <option value="Speedrun">Speedrun</option>
+                    <option value="Kaizo">Kaizo</option>
+                    <option value="Precision">Precision</option>
+                    <option value="Juggle">Juggle</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="card">
+                <div class="loading" id="listLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading levels...
+                </div>
+                <div class="error" id="listError" style="display:none;"></div>
+                <div class="table-container">
+                    <table id="levelsTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Level Name</th>
+                                <th>Creator</th>
+                                <th>Points</th>
+                                <th>Genre</th>
+                                <th>Level Code</th>
+                                <th>Clears</th>
+                            </tr>
+                        </thead>
+                        <tbody id="levelsBody">
+                            <!-- Levels will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="listPagination" style="display:none;">
+                    <!-- Pagination will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaderboard Page -->
+        <section id="leaderboard" class="page">
+            <h2><i class="fas fa-chart-line"></i> Player Leaderboard</h2>
+            
+            <div class="search-filter">
+                <input type="text" id="searchPlayer" class="search-box" placeholder="Search players by name...">
+                <select id="filterRank" class="filter-select">
+                    <option value="">All Ranks</option>
+                    <option value="Novice">Novice</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Professional">Professional</option>
+                    <option value="Master">Master</option>
+                    <option value="Grandmaster">Grandmaster</option>
+                    <option value="Legend">Legend</option>
+                    <option value="GOAT">GOAT</option>
+                </select>
+            </div>
+            
+            <div class="card">
+                <div class="loading" id="leaderboardLoading">
+                    <i class="fas fa-spinner"></i>
+                    Loading leaderboard...
+                </div>
+                <div class="error" id="leaderboardError" style="display:none;"></div>
+                <div class="table-container">
+                    <table id="leaderboardTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Points</th>
+                                <th>Rank</th>
+                                <th>Clears</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            <!-- Players will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="leaderboardPagination" style="display:none;">
+                    <!-- Pagination will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- About Page -->
+        <section id="about" class="page">
+            <h2><i class="fas fa-question-circle"></i> About SMM2 TOP100</h2>
+            
+            <div class="card">
+                <div class="info-section">
+                    <h3>What is this?</h3>
+                    <p>The SMM2 TOP100 is a community-curated list of the 100 most difficult player-made levels in Super Mario Maker 2 for Nintendo Switch. Our community of over 500 Discord members and YouTube subscribers works together to maintain and update this list.</p>
+                </div>
+                
+                <div class="info-section">
+                    <h3>How does the point system work?</h3>
+                    <p>Each level on the list has a point value determined by its placement:</p>
+                    <ul>
+                        <li><strong>#1:</strong> 1000 points</li>
+                        <li><strong>#2-5:</strong> Points calculated by formula: (-125 × placement) + 1125</li>
+                        <li><strong>#6-20:</strong> Points calculated by formula: 538 × (0.9642^(placement-1))</li>
+                        <li><strong>#21-50:</strong> Points calculated by formula: 396.0208 × (e^(-0.023 × placement))</li>
+                        <li><strong>#51-100:</strong> Points calculated by formula: 1523 × (e^(-0.05 × placement))</li>
+                    </ul>
+                    <p>Players accumulate points by clearing levels. The more difficult the level (higher placement), the more points you earn!</p>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Rank System</h3>
+                    <p>Earn special ranks by reaching point milestones:</p>
+                    <ul>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #00ff00; color: black; font-weight: 700; font-size: 0.8rem; margin: 2px;">Novice</span> - 10+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #ffff00; color: black; font-weight: 700; font-size: 0.8rem; margin: 2px;">Intermediate</span> - 50+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #ff9900; color: white; font-weight: 700; font-size: 0.8rem; margin: 2px;">Advanced</span> - 100+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #e06666; color: white; font-weight: 700; font-size: 0.8rem; margin: 2px;">Professional</span> - 250+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #93c47d; color: white; font-weight: 700; font-size: 0.8rem; margin: 2px;">Master</span> - 500+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: #8e7cc3; color: white; font-weight: 700; font-size: 0.8rem; margin: 2px;">Grandmaster</span> - 1000+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: cyan; color: black; font-weight: 700; font-size: 0.8rem; margin: 2px;">Legend</span> - 2500+ points</li>
+                        <li><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: magenta; color: white; font-weight: 700; font-size: 0.8rem; margin: 2px;">GOAT</span> - 5000+ points</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Role System (Discord)</h3>
+                    <p>Special Discord roles are awarded for notable achievements:</p>
+                    <ul>
+                        <li><strong>@Diamond</strong> - At least one top 5 clear</li>
+                        <li><strong>@Gold</strong> - At least one top 20 clear</li>
+                        <li><strong>@Silver</strong> - At least one top 50 clear</li>
+                        <li><strong>@Bronze</strong> - At least one top 100 clear</li>
+                        <li><strong>@List Level Uploader</strong> - At least one uploaded level on the list that you clear checked</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h3>How the list is maintained</h3>
+                    <p>The list is automatically updated using the TGR API to pull data directly from Super Mario Maker 2. When a player beats a level in-game, the leaderboard updates automatically. The entire system runs on Google Sheets with Apps Script automation.</p>
+                </div>
+                
+                <div class="info-section">
+                    <h3>How to participate</h3>
+                    <ol>
+                        <li>Join our Discord community</li>
+                        <li>Check the list for levels you want to attempt</li>
+                        <li>Use the level code to play the level in Super Mario Maker 2</li>
+                        <li>When you clear a level, our system automatically detects it</li>
+                        <li>Watch your points and rank increase on the leaderboard!</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Discord Page -->
+        <section id="discord" class="page">
+            <h2><i class="fab fa-discord"></i> Join Our Discord Community</h2>
+            
+            <div class="card">
+                <div style="text-align: center; padding: 3rem;">
+                    <i class="fab fa-discord" style="font-size: 5rem; color: #7289da; margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem; font-size: 1.8rem;">Connect with 500+ SMM2 Players</h3>
+                    <p style="margin-bottom: 2rem; font-size: 1.1rem;">Our Discord server is the heart of the SMM2 TOP100 community. Join to:</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 3rem;">
+                        <div style="background-color: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--text-black);"><i class="fas fa-comments"></i></div>
+                            <div style="font-size: 0.9rem; color: #666;">Discuss levels & strategies</div>
+                        </div>
+                        <div style="background-color: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--text-black);"><i class="fas fa-bell"></i></div>
+                            <div style="font-size: 0.9rem; color: #666;">Get notified of new levels</div>
+                        </div>
+                        <div style="background-color: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--text-black);"><i class="fas fa-trophy"></i></div>
+                            <div style="font-size: 0.9rem; color: #666;">Show off your clears</div>
+                        </div>
+                        <div style="background-color: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--text-black);"><i class="fas fa-users"></i></div>
+                            <div style="font-size: 0.9rem; color: #666;">Find collaboration partners</div>
+                        </div>
+                    </div>
+                    
+                    <a href="https://discord.gg/YOUR_LINK" class="social-link social-discord" target="_blank" id="discordLink">
+                        <i class="fab fa-discord"></i>
+                        <span>Join Discord Server (500+ members)</span>
+                    </a>
+                    
+                    <p style="margin-top: 2rem; color: #666; font-size: 0.9rem;">Note: Replace the Discord link above with your actual invite link</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Media Page -->
+        <section id="social" class="page">
+            <h2><i class="fas fa-hashtag"></i> Follow Us on Social Media</h2>
+            
+            <div class="card">
+                <div style="text-align: center; padding: 2rem;">
+                    <p style="margin-bottom: 2rem; font-size: 1.1rem;">Stay updated with the latest level clears, list changes, and community highlights across our social platforms.</p>
+                    
+                    <div class="social-links">
+                        <a href="https://youtube.com/YOUR_LINK" class="social-link social-youtube" target="_blank" id="youtubeLink">
+                            <i class="fab fa-youtube"></i>
+                            <div>
+                                <div style="font-weight: 700;">YouTube Channel</div>
+                                <div style="font-size: 0.9rem;">300+ subscribers, 1k+ views per video</div>
+                            </div>
+                        </a>
+                        
+                        <a href="https://twitter.com/YOUR_LINK" class="social-link social-twitter" target="_blank" id="twitterLink">
+                            <i class="fab fa-twitter"></i>
+                            <div>
+                                <div style="font-weight: 700;">X (Twitter)</div>
+                                <div style="font-size: 0.9rem;">Follow for updates and clear videos</div>
+                            </div>
+                        </a>
+                        
+                        <a href="https://twitch.tv/YOUR_LINK" class="social-link" style="background-color: #9146ff; color: white;" target="_blank" id="twitchLink">
+                            <i class="fab fa-twitch"></i>
+                            <div>
+                                <div style="font-weight: 700;">Twitch</div>
+                                <div style="font-size: 0.9rem;">Live level attempts and clears</div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 1rem;">About Our Content</h3>
+                        <p>Our YouTube channel features clear videos for every level on the TOP100 list, showcasing the skills of our community members. We also post tutorials, highlight reels, and community events.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>SMM2 TOP100 - Community-Driven Super Mario Maker 2 Difficulty Ranking</p>
+            
+            <div class="footer-links">
+                <a href="#" class="nav-link" data-page="list">Top 100 List</a>
+                <a href="#" class="nav-link" data-page="leaderboard">Leaderboard</a>
+                <a href="#" class="nav-link" data-page="about">About</a>
+                <a href="#" class="nav-link" data-page="discord">Discord</a>
+                <a href="#" class="nav-link" data-page="social">Social Media</a>
+            </div>
+            
+            <div class="copyright">
+                <p>This project is not affiliated with Nintendo. Super Mario Maker 2 is a trademark of Nintendo.</p>
+                <p>Data is automatically updated via TGR API. Last updated: <span id="footerUpdated">Loading...</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - UPDATE THIS URL!
+        // ============================================
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybta_5VOnWVfvfwBhwH0ku5dxKZ2cGXD4zCNyfWalOMY5g2h4ek24ZiJUVi7xvNab7AA/exec';
+        
+        // ============================================
+        // APP STATE
+        // ============================================
+        let appData = {
+            levels: [],
+            filteredLevels: [],
+            players: [],
+            filteredPlayers: [],
+            currentPage: 'list',
+            listPage: 1,
+            leaderboardPage: 1,
+            itemsPerPage: 20,
+            totalClears: 0,
+            lastUpdated: new Date()
+        };
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            setupNavigation();
+            setupEventListeners();
+            loadListData();
+        });
+        
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    navigateToPage(page);
+                });
+            });
+        }
+        
+        function navigateToPage(pageId) {
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.nav-link[data-page="${pageId}"]`).classList.add('active');
+            
+            // Update pages
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update app state
+            appData.currentPage = pageId;
+            
+            // Load data if needed
+            if (pageId === 'list' && appData.levels.length === 0) {
+                loadListData();
+            } else if (pageId === 'leaderboard' && appData.players.length === 0) {
+                loadLeaderboardData();
+            }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        function setupEventListeners() {
+            // List page search/filter
+            document.getElementById('searchLevel')?.addEventListener('input', filterList);
+            document.getElementById('filterGenre')?.addEventListener('change', filterList);
+            
+            // Leaderboard page search/filter
+            document.getElementById('searchPlayer')?.addEventListener('input', filterLeaderboard);
+            document.getElementById('filterRank')?.addEventListener('change', filterLeaderboard);
+        }
+        
+        // ============================================
+        // DATA LOADING (JSONP) - LIST
+        // ============================================
+        function loadListData() {
+            const startTime = Date.now();
+            
+            document.getElementById('listLoading').style.display = 'block';
+            document.getElementById('listError').style.display = 'none';
+            document.getElementById('levelsTable').style.display = 'none';
+            document.getElementById('listPagination').style.display = 'none';
+            
+            const callbackName = 'loadListData_' + Date.now();
+            const script = document.createElement('script');
+            script.src = APPS_SCRIPT_URL + '/getAllLevels?callback=' + callbackName;
+            
+            window[callbackName] = function(data) {
+                const loadTime = Date.now() - startTime;
+                
+                if (data && data.success && data.levels) {
+                    // SUCCESS!
+                    appData.levels = data.levels;
+                    appData.filteredLevels = [...data.levels];
+                    
+                    // Calculate stats
+                    appData.totalClears = data.levels.reduce((sum, level) => sum + (level.Clears || 0), 0);
+                    
+                    // Update UI
+                    updateTimestamp();
+                    
+                    // Display data
+                    displayLevels();
+                    
+                    // Show success
+                    document.getElementById('listLoading').style.display = 'none';
+                    document.getElementById('levelsTable').style.display = 'table';
+                    
+                } else {
+                    // ERROR
+                    showListError('Failed to load data: ' + (data ? data.error || data.message : 'Unknown error'));
+                }
+                
+                // Cleanup
+                delete window[callbackName];
+                document.head.removeChild(script);
+            };
+            
+            script.onerror = function() {
+                showListError('Failed to connect to server. Please try again.');
+                delete window[callbackName];
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        // ============================================
+        // DATA LOADING (JSONP) - LEADERBOARD
+        // ============================================
+        function loadLeaderboardData() {
+            const startTime = Date.now();
+            
+            document.getElementById('leaderboardLoading').style.display = 'block';
+            document.getElementById('leaderboardError').style.display = 'none';
+            document.getElementById('leaderboardTable').style.display = 'none';
+            document.getElementById('leaderboardPagination').style.display = 'none';
+            
+            const callbackName = 'loadLeaderboardData_' + Date.now();
+            const script = document.createElement('script');
+            script.src = APPS_SCRIPT_URL + '/getLeaderboard?callback=' + callbackName;
+            
+            window[callbackName] = function(data) {
+                const loadTime = Date.now() - startTime;
+                
+                if (data && data.success && data.players) {
+                    // SUCCESS!
+                    appData.players = data.players;
+                    appData.filteredPlayers = [...data.players];
+                    
+                    // Display data
+                    displayLeaderboard();
+                    
+                    // Update timestamp
+                    updateTimestamp();
+                    
+                    // Hide loading, show table
+                    document.getElementById('leaderboardLoading').style.display = 'none';
+                    document.getElementById('leaderboardTable').style.display = 'table';
+                    
+                } else {
+                    // ERROR
+                    showLeaderboardError('Failed to load leaderboard: ' + (data ? data.error || data.message : 'Unknown error'));
+                }
+                
+                // Cleanup
+                delete window[callbackName];
+                document.head.removeChild(script);
+            };
+            
+            script.onerror = function() {
+                showLeaderboardError('Failed to connect to server. Please try again.');
+                delete window[callbackName];
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        // ============================================
+        // DISPLAY FUNCTIONS - LIST
+        // ============================================
+        function displayLevels() {
+            const tbody = document.getElementById('levelsBody');
+            const pagination = document.getElementById('listPagination');
+            
+            // Clear table
+            tbody.innerHTML = '';
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(appData.filteredLevels.length / appData.itemsPerPage);
+            const startIndex = (appData.listPage - 1) * appData.itemsPerPage;
+            const endIndex = Math.min(startIndex + appData.itemsPerPage, appData.filteredLevels.length);
+            const pageLevels = appData.filteredLevels.slice(startIndex, endIndex);
+            
+            // Populate table
+            pageLevels.forEach(level => {
+                const row = document.createElement('tr');
+                row.className = 'level-row';
+                
+                // Get genre class
+                const genre = level.Genre || 'Other';
+                const genreClass = 'genre-' + genre.toLowerCase().replace(/[^a-z]/g, '');
+                
+                row.innerHTML = `
+                    <td>
+                        <strong style="font-size: 1.1rem;">#${level.Placement}</strong>
+                        ${level.Placement <= 10 ? '<div style="color: gold; font-size: 0.8rem;">⭐</div>' : ''}
+                    </td>
+                    <td>
+                        <div class="level-name">${level.CourseName || 'Unknown'}</div>
+                        ${level.ClearVideo ? 
+                            `<a href="${level.ClearVideo}" target="_blank" style="font-size: 0.8rem; color: #2196F3;">
+                                <i class="fas fa-video"></i> Clear Video
+                            </a>` : ''
+                        }
+                    </td>
+                    <td>
+                        <div>${level.Creator || 'Unknown'}</div>
+                        <div class="level-creator">${level.UploaderRegion || ''}</div>
+                    </td>
+                    <td class="level-points">${Math.round(level.Points || 0)}</td>
+                    <td><span class="level-genre ${genreClass}">${genre}</span></td>
+                    <td>
+                        <code class="level-code" onclick="copyToClipboard('${level.CourseID}')" 
+                              title="Click to copy">${level.CourseID || 'XXX-XXX-XXX'}</code>
+                    </td>
+                    <td>
+                        <strong>${level.Clears || 0}</strong>
+                        <div style="font-size: 0.8rem; color: #666;">clear${level.Clears !== 1 ? 's' : ''}</div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Update pagination
+            updatePagination(pagination, totalPages, 'listPage', displayLevels);
+        }
+        
+        // ============================================
+        // DISPLAY FUNCTIONS - LEADERBOARD
+        // ============================================
+        function displayLeaderboard() {
+            const tbody = document.getElementById('leaderboardBody');
+            const pagination = document.getElementById('leaderboardPagination');
+            
+            // Clear table
+            tbody.innerHTML = '';
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(appData.filteredPlayers.length / appData.itemsPerPage);
+            const startIndex = (appData.leaderboardPage - 1) * appData.itemsPerPage;
+            const endIndex = Math.min(startIndex + appData.itemsPerPage, appData.filteredPlayers.length);
+            const pagePlayers = appData.filteredPlayers.slice(startIndex, endIndex);
+            
+            // Populate table
+            pagePlayers.forEach((player, index) => {
+                const row = document.createElement('tr');
+                
+                // Get rank class
+                const rankClass = 'rank-' + player.rank.toLowerCase().replace(/[^a-z]/g, '');
+                
+                row.innerHTML = `
+                    <td>${startIndex + index + 1}</td>
+                    <td>
+                        <div style="font-weight: 600;">${player.name}</div>
+                        <div style="font-size: 0.9rem; color: #666;">${player.region}</div>
+                    </td>
+                    <td style="font-weight: 700;">${player.points.toLocaleString()}</td>
+                    <td><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: ${getRankColor(player.rank)}; color: ${getRankTextColor(player.rank)}; font-weight: 700; font-size: 0.8rem;">
+                        ${player.rank}
+                    </span></td>
+                    <td>${player.clears}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Update pagination
+            updatePagination(pagination, totalPages, 'leaderboardPage', displayLeaderboard);
+        }
+        
+        // ============================================
+        // PAGINATION
+        // ============================================
+        function updatePagination(element, totalPages, pageProp, displayFunction) {
+            if (totalPages > 1) {
+                element.innerHTML = '';
+                
+                // Previous button
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevButton.disabled = appData[pageProp] === 1;
+                prevButton.addEventListener('click', function() {
+                    if (appData[pageProp] > 1) {
+                        appData[pageProp]--;
+                        displayFunction();
+                    }
+                });
+                element.appendChild(prevButton);
+                
+                // Page buttons
+                const maxVisible = 5;
+                let startPage = Math.max(1, appData[pageProp] - Math.floor(maxVisible / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+                
+                if (endPage - startPage + 1 < maxVisible) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+                
+                if (startPage > 1) {
+                    const firstButton = document.createElement('button');
+                    firstButton.textContent = '1';
+                    firstButton.addEventListener('click', function() {
+                        appData[pageProp] = 1;
+                        displayFunction();
+                    });
+                    element.appendChild(firstButton);
+                    
+                    if (startPage > 2) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        ellipsis.style.padding = '8px 5px';
+                        element.appendChild(ellipsis);
+                    }
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    if (i === appData[pageProp]) {
+                        pageButton.classList.add('active');
+                    }
+                    pageButton.addEventListener('click', function() {
+                        appData[pageProp] = i;
+                        displayFunction();
+                    });
+                    element.appendChild(pageButton);
+                }
+                
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        const ellipsis = document.createElement('span');
+                        ellipsis.textContent = '...';
+                        ellipsis.style.padding = '8px 5px';
+                        element.appendChild(ellipsis);
+                    }
+                    
+                    const lastButton = document.createElement('button');
+                    lastButton.textContent = totalPages;
+                    lastButton.addEventListener('click', function() {
+                        appData[pageProp] = totalPages;
+                        displayFunction();
+                    });
+                    element.appendChild(lastButton);
+                }
+                
+                // Next button
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextButton.disabled = appData[pageProp] === totalPages;
+                nextButton.addEventListener('click', function() {
+                    if (appData[pageProp] < totalPages) {
+                        appData[pageProp]++;
+                        displayFunction();
+                    }
+                });
+                element.appendChild(nextButton);
+                
+                element.style.display = 'flex';
+            } else {
+                element.style.display = 'none';
+            }
+        }
+        
+        // ============================================
+        // FILTER FUNCTIONS
+        // ============================================
+        function filterList() {
+            const searchTerm = document.getElementById('searchLevel').value.toLowerCase();
+            const genreFilter = document.getElementById('filterGenre').value;
+            
+            appData.filteredLevels = appData.levels.filter(level => {
+                // Search term filter
+                const matchesSearch = !searchTerm || 
+                    (level.CourseName && level.CourseName.toLowerCase().includes(searchTerm)) ||
+                    (level.Creator && level.Creator.toLowerCase().includes(searchTerm)) ||
+                    (level.Uploader && level.Uploader.toLowerCase().includes(searchTerm));
+                
+                // Genre filter
+                const matchesGenre = !genreFilter || 
+                    (level.Genre && level.Genre.toLowerCase() === genreFilter.toLowerCase());
+                
+                return matchesSearch && matchesGenre;
+            });
+            
+            // Reset to first page when filtering
+            appData.listPage = 1;
+            
+            // Display filtered results
+            displayLevels();
+        }
+        
+        function filterLeaderboard() {
+            const searchTerm = document.getElementById('searchPlayer').value.toLowerCase();
+            const rankFilter = document.getElementById('filterRank').value;
+            
+            appData.filteredPlayers = appData.players.filter(player => {
+                // Search term filter
+                const matchesSearch = !searchTerm || 
+                    player.name.toLowerCase().includes(searchTerm);
+                
+                // Rank filter
+                const matchesRank = !rankFilter || 
+                    player.rank === rankFilter;
+                
+                return matchesSearch && matchesRank;
+            });
+            
+            // Reset to first page when filtering
+            appData.leaderboardPage = 1;
+            
+            // Display filtered results
+            displayLeaderboard();
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function updateTimestamp() {
+            const now = new Date();
+            appData.lastUpdated = now;
+            const timeString = formatDate(now);
+            document.getElementById('lastUpdated').textContent = `Last updated: ${timeString}`;
+            document.getElementById('footerUpdated').textContent = timeString;
+        }
+        
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function showListError(message) {
+            document.getElementById('listLoading').style.display = 'none';
+            document.getElementById('listError').innerHTML = `
+                <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                <p>${message}</p>
+                <button onclick="loadListData()" style="
+                    margin-top: 10px;
+                    padding: 10px 20px;
+                    background: var(--dark-yellow);
+                    border: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            `;
+            document.getElementById('listError').style.display = 'block';
+        }
+        
+        function showLeaderboardError(message) {
+            document.getElementById('leaderboardLoading').style.display = 'none';
+            document.getElementById('leaderboardError').innerHTML = `
+                <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+                <p>${message}</p>
+                <button onclick="loadLeaderboardData()" style="
+                    margin-top: 10px;
+                    padding: 10px 20px;
+                    background: var(--dark-yellow);
+                    border: none;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            `;
+            document.getElementById('leaderboardError').style.display = 'block';
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Show temporary notification
+                const notification = document.createElement('div');
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.backgroundColor = 'var(--dark-yellow)';
+                notification.style.color = 'black';
+                notification.style.padding = '10px 20px';
+                notification.style.borderRadius = '5px';
+                notification.style.boxShadow = 'var(--shadow)';
+                notification.style.zIndex = '10000';
+                notification.innerHTML = `<i class="fas fa-check"></i> Copied: ${text}`;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+        
+        function getRankColor(rank) {
+            switch(rank) {
+                case 'GOAT': return 'magenta';
+                case 'Legend': return 'cyan';
+                case 'Grandmaster': return '#8e7cc3';
+                case 'Master': return '#93c47d';
+                case 'Professional': return '#e06666';
+                case 'Advanced': return '#ff9900';
+                case 'Intermediate': return 'yellow';
+                case 'Novice': return '#00ff00';
+                default: return '#e0e0e0';
+            }
+        }
+        
+        function getRankTextColor(rank) {
+            return ['Intermediate', 'Novice', 'Legend'].includes(rank) ? 'black' : 'white';
+        }
+        
+        // ============================================
+        // AUTO-REFRESH (every 5 minutes)
+        // ============================================
+        setInterval(() => {
+            if (appData.currentPage === 'list') {
+                loadListData();
+            } else if (appData.currentPage === 'leaderboard') {
+                loadLeaderboardData();
+            }
+        }, 5 * 60 * 1000);
+        
+        // ============================================
+        // SETUP INSTRUCTIONS
+        // ============================================
+        console.log(`
+========== IMPORTANT SETUP INSTRUCTIONS ==========
+
+1. UPDATE YOUR SOCIAL LINKS:
+   - Line 325: Replace "YOUR_LINK" in the Discord link
+   - Line 414: Replace "YOUR_LINK" in the YouTube link
+   - Line 423: Replace "YOUR_LINK" in the Twitter/X link
+   - Line 432: Replace "YOUR_LINK" in the Twitch link
+
+2. YOUR APPS SCRIPT URL IS ALREADY CONFIGURED:
+   - Current URL: ${APPS_SCRIPT_URL}
+   - This should work with your existing Deploy.gs script
+
+==================================================
+        `);
+    </script>
+</body>
+</html>
