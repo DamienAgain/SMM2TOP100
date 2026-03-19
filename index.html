@@ -650,7 +650,7 @@
                     <h3 style="margin-bottom: 1rem; font-size: 1.8rem;">Connect with 500+ SMM2 Players</h3>
                     <p style="margin-bottom: 2rem; font-size: 1.1rem;">Our Discord server is the center of the SMM2 TOP100 community. Join to:</p>
                     
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 3rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">
                         <div style="background-color: rgba(255, 255, 255, 0.7); padding: 15px; border-radius: 10px; text-align: center;">
                             <div style="font-size: 2rem; font-weight: 700; color: var(--text-black);"><i class="fas fa-comments"></i></div>
                             <div style="font-size: 0.9rem; color: #666;">Discuss levels & strategies</div>
@@ -1008,7 +1008,7 @@
                     <td>${startIndex + index + 1}</td>
                     <td>
                         <div style="font-weight: 600;">${player.name}</div>
-                        <div style="font-size: 0.9rem; color: #666;">${player.region}</div>
+                        <div style="font-size: 0.9rem; color: #666;">${player.displayName.slice(0,2)}</div>
                     </td>
                     <td style="font-weight: 700;">${player.points.toLocaleString()}</td>
                     <td><span style="display: inline-block; padding: 5px 12px; border-radius: 20px; background-color: ${getRankColor(player.rank)}; color: ${getRankTextColor(player.rank)}; font-weight: 700; font-size: 0.8rem;">
