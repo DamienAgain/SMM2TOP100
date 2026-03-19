@@ -829,7 +829,7 @@
             
             const callbackName = 'loadListData_' + Date.now();
             const script = document.createElement('script');
-            script.src = APPS_SCRIPT_URL + '/getAllLevels?callback=' + callbackName;
+            script.src = APPS_SCRIPT_URL + '?action=getAllLevels&callback=' + callbackName;
             
             window[callbackName] = function(data) {
                 const loadTime = Date.now() - startTime;
