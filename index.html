@@ -883,7 +883,7 @@
             
             const callbackName = 'loadLeaderboardData_' + Date.now();
             const script = document.createElement('script');
-            script.src = APPS_SCRIPT_URL + '/getLeaderboard?callback=' + callbackName;
+            script.src = APPS_SCRIPT_URL + '?action=getLeaderboard&callback=' + callbackName;
             
             window[callbackName] = function(data) {
                 const loadTime = Date.now() - startTime;
