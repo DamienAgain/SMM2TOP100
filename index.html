@@ -1003,11 +1003,11 @@
                 
                 // Get rank class
                 const rankClass = 'rank-' + player.rank.toLowerCase().replace(/[^a-z]/g, '');
-                
+                //test123
                 row.innerHTML = `
                     <td>${startIndex + index + 1}</td>
                     <td>
-                        <div style="font-weight: 600;">${player.name}</div>
+                        <div style="font-weight: 600;">${player.displayName.slice(3, player.displayName.lastIndexOf(' ')).trim()}</div>
                         <div style="font-size: 0.9rem; color: #666;">${player.displayName.slice(0,2)}</div>
                     </td>
                     <td style="font-weight: 700;">${player.points.toLocaleString()}</td>
