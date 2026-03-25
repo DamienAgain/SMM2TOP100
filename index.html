@@ -470,11 +470,11 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="#" class="nav-link active" data-page="list"><i class="fas fa-list-ol"></i> Top 100 List</a></li>
-                    <li><a href="#" class="nav-link" data-page="leaderboard"><i class="fas fa-medal"></i> Leaderboard</a></li>
-                    <li><a href="#" class="nav-link" data-page="about"><i class="fas fa-info-circle"></i> About</a></li>
-                    <li><a href="#" class="nav-link" data-page="discord"><i class="fab fa-discord"></i> Discord</a></li>
-                    <li><a href="#" class="nav-link" data-page="social"><i class="fas fa-share-alt"></i> Social Media</a></li>
+                    <li><a href="#list" class="nav-link active" data-page="list">Top 100 List</a></li>
+                    <li><a href="#leaderboard" class="nav-link" data-page="leaderboard">Leaderboard</a></li>
+                    <li><a href="#about" class="nav-link" data-page="about">About</a></li>
+                    <li><a href="#discord" class="nav-link" data-page="discord">Discord</a></li>
+                    <li><a href="#social" class="nav-link" data-page="social">Social Media</a></li>
                 </ul>
             </nav>
         </div>
@@ -773,10 +773,23 @@
         // INITIALIZATION
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            setupNavigation();
-            setupEventListeners();
-            loadListData();
-        });
+    setupNavigation();
+    setupEventListeners();
+    loadListData();
+
+    
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+        navigateToPage(hash);
+    }
+
+    window.addEventListener('hashchange', () => {
+        const newHash = window.location.hash.replace('#', '');
+        if (newHash) {
+            navigateToPage(newHash);
+        }
+    });
+});
         
         // ============================================
         // NAVIGATION
