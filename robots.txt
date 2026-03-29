@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://top100smm2.com/sitemap.xml
