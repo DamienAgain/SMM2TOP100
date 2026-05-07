@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://jsdelivr.net"></script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -618,12 +619,13 @@
                     <h3>How does the point system work?</h3>
                     <p>Each level on the list has a point value determined by its placement:</p>
                     <ul>
-                        <li><strong>#1:</strong> 1000 points</li>
-                        <li><strong>#2-5:</strong> Points calculated by formula: (-125 × placement) + 1125</li>
-                        <li><strong>#6-20:</strong> Points calculated by formula: 538 × (0.9642^(placement-1))</li>
-                        <li><strong>#21-50:</strong> Points calculated by formula: 396.0208 × (e^(-0.023 × placement))</li>
-                        <li><strong>#51-100:</strong> Points calculated by formula: 423.5 × (e^(-0.02493 × placement)) + 3</li>
+                        <li><strong>#1:</strong> \( 1000 \) points</li>
+                        <li><strong>#2-5:</strong> \( P = -125 \times \text{placement} + 1125 \)</li>
+                        <li><strong>#6-20:</strong> \( P = 538 \times (0.9642^{\text{placement}-1}) \)</li>
+                        <li><strong>#21-50:</strong> \( P = 396.0208 \times e^{-0.023 \times \text{placement}} \)</li>
+                        <li><strong>#51-100:</strong> \( P = 423.5 \times e^{-0.02493 \times \text{placement}} + 3 \)</li>
                     </ul>
+
                     <p>Players accumulate points by clearing levels. The more difficult the level (higher placement), the more points you earn!</p>
                 </div>
                 
