@@ -508,12 +508,37 @@
         });
     });
     // ── Navigation
+    // All in-app navigation goes through goToPage() so window.location.hash
+    // always reflects what's on screen. Previously nav/back links called
+    // navigateToPage() directly after preventDefault(), which updated the
+    // DOM but left the URL hash stale — e.g. after using "Back to Leaderboard"
+    // the hash stayed on the old #player/PID, so re-clicking that SAME
+    // player's name didn't change the hash and the hashchange listener never
+    // fired (clicking a DIFFERENT player worked, since that hash was new).
+    function goToPage(pageId) {
+        const current = window.location.hash.replace('#', '');
+        if (current === pageId) {
+            // Hash already matches — it won't change, so hashchange won't
+            // fire on its own. Navigate directly instead.
+            navigateToPage(pageId);
+        } else {
+            window.location.hash = pageId; // triggers 'hashchange' → navigateToPage
+        }
+    }
     function setupNavigation() {
         document.querySelectorAll('.nav-link, .back-link').forEach(link => {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
-                navigateToPage(this.getAttribute('data-page'));
+                goToPage(this.getAttribute('data-page'));
             });
+        });
+        // Player name links in the leaderboard table are created/replaced on
+        // every render, so bind once via delegation instead of per-row.
+        document.getElementById('leaderboardBody')?.addEventListener('click', function (e) {
+            const link = e.target.closest('.player-name-link');
+            if (!link) return;
+            e.preventDefault();
+            goToPage((link.getAttribute('href') || '').replace(/^#/, ''));
         });
     }
     function navigateToPage(pageId) {
@@ -862,12 +887,22 @@
         displayLevels();
     }
     function filterLeaderboard() {
-        const term = document.getElementById('searchPlayer').value.toLowerCase();
+        const term = document.getElementById('searchPlayer').value.trim().toLowerCase();
         const rank = document.getElementById('filterRank').value;
         appData.filteredPlayers = appData.players.filter(function (p) {
             const dn       = p.displayName || '';
             const namePart = dn.slice(3, dn.lastIndexOf(' ')).trim().toLowerCase();
-            const ms = !term || namePart.includes(term) || (p.name || '').toLowerCase().includes(term);
+            // p.region is the player's actual 2-letter country code, parsed
+            // server-side from the same "XX Name PID" format as dn.slice(0,2).
+            const region   = (p.region || dn.slice(0, 2)).trim().toLowerCase();
+            const nameMatch   = namePart.includes(term) || (p.name || '').toLowerCase().includes(term);
+            // A 2-letter search term also matches by nationality, not just as
+            // a substring of the name — previously "jp"/"us" only happened to
+            // work when those letters appeared inside a player's name, which
+            // both missed real JP players and pulled in unrelated matches
+            // (e.g. a JP player whose name contains "us").
+            const regionMatch = term.length === 2 && region === term;
+            const ms = !term || nameMatch || regionMatch;
             const mr = !rank || p.rank === rank;
             return ms && mr;
         });
