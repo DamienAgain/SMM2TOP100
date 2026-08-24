@@ -170,6 +170,43 @@
             font-weight: 700; white-space: nowrap;
         }
         .clears-section-heading { margin-bottom: 1rem; }
+        /* Level profile */
+        .level-name-link {
+            color: inherit; text-decoration: none;
+            border-bottom: 1px dashed rgba(0,0,0,0.45);
+            cursor: pointer; transition: color 0.2s, border-color 0.2s;
+        }
+        .level-name-link:hover { color: #1565C0; border-bottom-color: #1565C0; }
+        .level-profile-header { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; padding: 0.5rem 0 1.5rem; }
+        .level-profile-thumb {
+            width: 240px; height: 135px; object-fit: cover;
+            border-radius: 8px; display: block; background: #ccc;
+            max-width: 100%;
+        }
+        .level-profile-thumb-placeholder {
+            width: 240px; height: 135px; max-width: 100%;
+            border-radius: 8px; background: #ddd;
+            display: flex; align-items: center; justify-content: center;
+            color: #888; font-size: 0.9rem;
+        }
+        .level-profile-info { flex: 1; min-width: 220px; }
+        .level-profile-name { font-size: 1.8rem; font-weight: 700; }
+        .level-profile-badges { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+        .level-placement-badge {
+            display: inline-block; padding: 6px 16px; border-radius: 20px;
+            font-size: 1rem; font-weight: 700; background: var(--darker-yellow); color: black;
+        }
+        .maker-uploader-block { background: rgba(255,255,255,0.6); padding: 15px; border-radius: 10px; margin-bottom: 1.5rem; }
+        .maker-uploader-block .row { margin-bottom: 6px; }
+        .maker-uploader-block .row:last-child { margin-bottom: 0; }
+        .level-links-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 2rem; }
+        .level-link-btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+            border-radius: 8px; background: var(--dark-yellow); color: black;
+            text-decoration: none; font-weight: 600; transition: background 0.2s;
+        }
+        .level-link-btn:hover { background: var(--darker-yellow); }
+        .level-link-btn.disabled { opacity: 0.5; pointer-events: none; }
         /* Responsive */
         @media (max-width: 900px) {
             .thumb-cell { width: 70px; }
@@ -316,6 +353,38 @@
                             <th></th>
                         </tr></thead>
                         <tbody id="playerClearsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- LEVEL PROFILE -->
+    <section id="level" class="page">
+        <a href="#list" class="back-link" data-page="list"><i class="fas fa-arrow-left"></i> Back to Top 100 List</a>
+        <div class="card">
+            <div class="loading" id="levelLoading"><i class="fas fa-spinner"></i>Loading level profile...</div>
+            <div class="error" id="levelError" style="display:none;"></div>
+            <div id="levelContent" style="display:none;">
+                <div class="level-profile-header">
+                    <div id="levelThumb"></div>
+                    <div class="level-profile-info">
+                        <div class="level-profile-name" id="levelName"></div>
+                        <div id="levelBadges"></div>
+                    </div>
+                </div>
+                <div class="stat-grid" id="levelStats"></div>
+                <div id="levelMakerInfo"></div>
+                <div class="level-links-row" id="levelLinks"></div>
+                <h3 class="clears-section-heading"><i class="fas fa-users"></i> Players Who Cleared This Level</h3>
+                <div class="table-container">
+                    <table id="levelClearersTable">
+                        <thead><tr>
+                            <th>Leaderboard Rank</th>
+                            <th>Player</th>
+                            <th>Badge</th>
+                            <th></th>
+                        </tr></thead>
+                        <tbody id="levelClearersBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -532,10 +601,12 @@
                 goToPage(this.getAttribute('data-page'));
             });
         });
-        // Player name links in the leaderboard table are created/replaced on
-        // every render, so bind once via delegation instead of per-row.
-        document.getElementById('leaderboardBody')?.addEventListener('click', function (e) {
-            const link = e.target.closest('.player-name-link');
+        // Player-name and level-name links are created/replaced dynamically
+        // in several places (leaderboard rows, level clearers table, the
+        // uploader line on a level profile, etc.), so handle them once via
+        // delegation on the whole document instead of binding per-container.
+        document.addEventListener('click', function (e) {
+            const link = e.target.closest('.player-name-link, .level-name-link');
             if (!link) return;
             e.preventDefault();
             goToPage((link.getAttribute('href') || '').replace(/^#/, ''));
@@ -560,7 +631,8 @@
         if (targetPage === 'list' && appData.levels.length === 0) loadListData();
         else if (targetPage === 'leaderboard' && appData.players.length === 0) loadLeaderboardData();
         else if (targetPage === 'player' && param) showPlayerProfile(param);
-        else if (targetPage !== 'player') document.title = ORIGINAL_TITLE;
+        else if (targetPage === 'level' && param) showLevelProfile(param);
+        else if (targetPage !== 'player' && targetPage !== 'level') document.title = ORIGINAL_TITLE;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     function setupEventListeners() {
@@ -683,7 +755,7 @@
                 + '</td>'
                 + '<td class="thumb-cell">' + thumbHtml + '</td>'
                 + '<td>'
-                +   '<div class="level-name">' + escapeHtml(level.CourseName || 'Unknown') + '</div>'
+                +   '<div class="level-name"><a href="#level/' + level.Placement + '" class="level-name-link" title="View level profile">' + escapeHtml(level.CourseName || 'Unknown') + '</a></div>'
                 +   (level.ClearVideo ? '<a href="' + escapeHtml(level.ClearVideo) + '" target="_blank" style="font-size:0.8rem;color:#c00;"><i class="fab fa-youtube"></i> Clear Video</a>' : '')
                 + '</td>'
                 + '<td>'
@@ -834,6 +906,160 @@
         document.getElementById('playerContent').style.display = 'none';
         document.getElementById('playerError').innerHTML = '<h3><i class="fas fa-exclamation-triangle"></i> Error</h3><p>' + msg + '</p>';
         document.getElementById('playerError').style.display = 'block';
+    }
+    // ── Level profile
+    function showLevelProfile(placementParam) {
+        document.getElementById('levelLoading').style.display = 'block';
+        document.getElementById('levelError').style.display = 'none';
+        document.getElementById('levelContent').style.display = 'none';
+
+        const placement = parseInt(placementParam, 10);
+
+        function tryRender() {
+            if (!placement || placement < 1 || placement > 100) {
+                showLevelError("That doesn't look like a valid Top 100 level.");
+                return;
+            }
+            const level = appData.levels.find(l => l.Placement === placement);
+            if (!level) {
+                showLevelError("Couldn't find that level.");
+                return;
+            }
+            renderLevelProfile(level);
+        }
+
+        const needLevels  = appData.levels.length === 0;
+        const needPlayers = appData.players.length === 0;
+
+        if (!needLevels && !needPlayers) {
+            tryRender();
+            return;
+        }
+
+        let remaining = (needLevels ? 1 : 0) + (needPlayers ? 1 : 0);
+        const onPieceLoaded = function () {
+            remaining--;
+            if (remaining <= 0) tryRender();
+        };
+        if (needLevels) loadListData(onPieceLoaded);
+        if (needPlayers) loadLeaderboardData(onPieceLoaded);
+    }
+    // Every player whose clearPlacements includes this level's placement —
+    // built by inverting the leaderboard data already loaded client-side, so
+    // no extra backend field is needed for "who cleared this level."
+    // Sorted best-player-first by points.
+    function getLevelClearers(placement) {
+        const clearers = appData.players.filter(p => (p.clearPlacements || []).includes(placement));
+        clearers.sort((a, b) => b.points - a.points);
+        return clearers;
+    }
+    function renderLevelProfile(level) {
+        document.getElementById('levelLoading').style.display = 'none';
+        document.getElementById('levelError').style.display = 'none';
+        document.getElementById('levelContent').style.display = 'block';
+
+        const courseID  = (level.CourseID || '').trim();
+        const origID    = (level.OriginalCourseID || '').trim();
+        const deleted   = !isValidCourseID(courseID);
+        const viewerID  = deleted ? origID : courseID;
+        const viewerURL = viewerID ? VIEWER_BASE + viewerID : null;
+
+        const ytID = getYouTubeID(level.ClearVideo);
+        document.getElementById('levelThumb').innerHTML = ytID
+            ? '<img class="level-profile-thumb" src="' + ytThumb(ytID) + '" alt="' + escapeHtml(level.CourseName || 'Level') + '" onerror="this.outerHTML=\'<div class=\\\'level-profile-thumb-placeholder\\\'>No image</div>\'">'
+            : '<div class="level-profile-thumb-placeholder">No image</div>';
+
+        document.getElementById('levelName').textContent = level.CourseName || 'Unknown Level';
+        const genre = level.Genre || 'Other';
+        document.getElementById('levelBadges').innerHTML =
+            '<div class="level-profile-badges">'
+            + '<span class="level-placement-badge">#' + level.Placement + '</span>'
+            + '<span class="level-genre genre-' + genre.toLowerCase().replace(/[^a-z]/g, '') + '">' + escapeHtml(genre) + '</span>'
+            + (deleted ? '<span class="level-deleted">DELETED</span>' : '')
+            + '</div>';
+
+        document.getElementById('levelStats').innerHTML =
+            statTile(Math.round(level.Points || 0), 'Points')
+            + statTile(level.Clears || 0, 'Total Clears');
+
+        // Maker(s) vs. uploader: "Creator" is already parsed server-side from
+        // the parenthetical in the List sheet's column D (maker name(s) in
+        // parens when they differ from the uploader). "Uploader"/UploaderPID/
+        // UploaderRegion come from a separate sheet and identify who
+        // clear-checked/submitted the level. Only show them as two distinct
+        // lines when there's an actual, different uploader on record —
+        // otherwise just show one merged "Maker / Uploader" line.
+        const uploaderDN     = level.Uploader || '';
+        const uploaderName   = uploaderDN.slice(3, uploaderDN.lastIndexOf(' ')).trim();
+        const uploaderRegion = level.UploaderRegion || uploaderDN.slice(0, 2);
+        const uploaderPid    = level.UploaderPID || '0';
+        const makerText      = (level.Creator || 'Unknown').trim();
+        const uploaderKnown  = !!(uploaderPid && uploaderPid !== '0' && uploaderName && uploaderName.toLowerCase() !== 'unknown');
+
+        const uploaderLinkOpen  = uploaderPid && uploaderPid !== '0' ? '<a href="#player/' + encodeURIComponent(uploaderPid) + '" class="player-name-link">' : '';
+        const uploaderLinkClose = uploaderPid && uploaderPid !== '0' ? '</a>' : '';
+
+        let makerHtml;
+        if (!uploaderKnown) {
+            makerHtml = '<div class="row"><strong>Maker(s):</strong> ' + escapeHtml(makerText) + '</div>';
+        } else if (uploaderName.toLowerCase() === makerText.toLowerCase()) {
+            makerHtml =
+                '<div class="row"><strong>Maker / Uploader:</strong> '
+                + flagHtml(uploaderRegion, uploaderRegion) + ' ' + uploaderLinkOpen + escapeHtml(uploaderName) + uploaderLinkClose
+                + '</div>';
+        } else {
+            makerHtml =
+                '<div class="row"><strong>Maker(s):</strong> ' + escapeHtml(makerText) + '</div>'
+                + '<div class="row"><strong>Uploader (clear-checked by):</strong> '
+                + flagHtml(uploaderRegion, uploaderRegion) + ' ' + uploaderLinkOpen + escapeHtml(uploaderName) + uploaderLinkClose
+                + '</div>';
+        }
+        document.getElementById('levelMakerInfo').innerHTML = '<div class="maker-uploader-block">' + makerHtml + '</div>';
+
+        let linksHtml = '';
+        linksHtml += viewerURL
+            ? '<a class="level-link-btn" href="' + viewerURL + '" target="_blank"><i class="fas fa-external-link-alt"></i> View on Wizu</a>'
+            : '<span class="level-link-btn disabled"><i class="fas fa-external-link-alt"></i> View on Wizu</span>';
+        linksHtml += level.ClearVideo
+            ? '<a class="level-link-btn" href="' + escapeHtml(level.ClearVideo) + '" target="_blank"><i class="fab fa-youtube"></i> Watch Clear Video</a>'
+            : '<span class="level-link-btn disabled"><i class="fab fa-youtube"></i> Watch Clear Video</span>';
+        if (!deleted && courseID) {
+            linksHtml += '<code class="level-code" onclick="copyToClipboard(\'' + courseID + '\')" title="Click to copy">' + courseID + '</code>';
+        }
+        document.getElementById('levelLinks').innerHTML = linksHtml;
+
+        const clearers = getLevelClearers(level.Placement);
+        const tbody = document.getElementById('levelClearersBody');
+        tbody.innerHTML = '';
+        if (clearers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">No one has cleared this level yet.</td></tr>';
+        } else {
+            clearers.forEach(function (p) {
+                const globalRank  = (appData._rankMap && appData._rankMap.get(p.pid)) || '?';
+                const dn          = p.displayName || '';
+                const region      = p.region || dn.slice(0, 2);
+                const namePart    = dn.slice(3, dn.lastIndexOf(' ')).trim() || p.name || 'Unknown';
+                const isUploader  = (p.uploadedPlacements || []).includes(level.Placement);
+                const row = document.createElement('tr');
+                row.innerHTML =
+                    '<td><strong>#' + globalRank + '</strong></td>'
+                    + '<td><a href="#player/' + encodeURIComponent(p.pid) + '" class="player-name-link">' + flagHtml(region, region) + ' ' + escapeHtml(namePart) + '</a></td>'
+                    + '<td><span style="display:inline-block;padding:4px 10px;border-radius:20px;'
+                    +   'background-color:' + getRankColor(p.rank) + ';'
+                    +   'color:' + getRankTextColor(p.rank) + ';'
+                    +   'font-weight:700;font-size:0.8rem;">' + p.rank + '</span></td>'
+                    + '<td>' + (isUploader ? '<span class="uploader-badge">Uploader</span>' : '') + '</td>';
+                tbody.appendChild(row);
+            });
+        }
+
+        document.title = (level.CourseName || 'Level') + ' - SMM2 TOP100';
+    }
+    function showLevelError(msg) {
+        document.getElementById('levelLoading').style.display = 'none';
+        document.getElementById('levelContent').style.display = 'none';
+        document.getElementById('levelError').innerHTML = '<h3><i class="fas fa-exclamation-triangle"></i> Error</h3><p>' + msg + '</p>';
+        document.getElementById('levelError').style.display = 'block';
     }
     // ── Pagination
     function updatePagination(el, total, prop, fn) {
