@@ -991,7 +991,9 @@
         // otherwise just show one merged "Maker / Uploader" line.
         const uploaderDN     = level.Uploader || '';
         const uploaderName   = uploaderDN.slice(3, uploaderDN.lastIndexOf(' ')).trim();
-        const uploaderRegion = level.UploaderRegion || uploaderDN.slice(0, 2);
+        // Same fix as the clearers list below: slice the raw displayName
+        // rather than trusting the backend's pre-parsed UploaderRegion field.
+        const uploaderRegion = uploaderDN.slice(0, 2).trim() || level.UploaderRegion;
         const uploaderPid    = level.UploaderPID || '0';
         const makerText      = (level.Creator || 'Unknown').trim();
         const uploaderKnown  = !!(uploaderPid && uploaderPid !== '0' && uploaderName && uploaderName.toLowerCase() !== 'unknown');
@@ -1037,7 +1039,13 @@
             clearers.forEach(function (p) {
                 const globalRank  = (appData._rankMap && appData._rankMap.get(p.pid)) || '?';
                 const dn          = p.displayName || '';
-                const region      = p.region || dn.slice(0, 2);
+                // Prefer slicing the raw displayName (same method the working
+                // leaderboard/player-profile flags use) over the backend's
+                // pre-parsed p.region — that field is split on spaces server
+                // side and falls back to "XX" (unknown) for any entry with
+                // slightly irregular whitespace, which was showing up as a
+                // blank "?" flag for a lot of non-JP players here.
+                const region      = dn.slice(0, 2).trim() || p.region;
                 const namePart    = dn.slice(3, dn.lastIndexOf(' ')).trim() || p.name || 'Unknown';
                 const isUploader  = (p.uploadedPlacements || []).includes(level.Placement);
                 const row = document.createElement('tr');
@@ -1118,9 +1126,11 @@
         appData.filteredPlayers = appData.players.filter(function (p) {
             const dn       = p.displayName || '';
             const namePart = dn.slice(3, dn.lastIndexOf(' ')).trim().toLowerCase();
-            // p.region is the player's actual 2-letter country code, parsed
-            // server-side from the same "XX Name PID" format as dn.slice(0,2).
-            const region   = (p.region || dn.slice(0, 2)).trim().toLowerCase();
+            // Slice the raw displayName rather than trusting the backend's
+            // pre-parsed p.region — that field is unreliable for entries with
+            // irregular whitespace (falls back to "XX"), which was making
+            // this same-country search miss/mismatch a lot of non-JP players.
+            const region   = (dn.slice(0, 2).trim() || p.region || '').toLowerCase();
             const nameMatch   = namePart.includes(term) || (p.name || '').toLowerCase().includes(term);
             // A 2-letter search term also matches by nationality, not just as
             // a substring of the name — previously "jp"/"us" only happened to
