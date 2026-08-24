@@ -11,9 +11,13 @@
     <script>
     (function () {
         try {
+            // Default is always light unless the visitor has explicitly
+            // toggled dark mode before (saved below). Deliberately NOT
+            // falling back to prefers-color-scheme — most devices ship with
+            // dark as the OS default, which was making dark mode the
+            // effective default for every new visitor instead of light.
             var saved = localStorage.getItem('mm2top100-theme');
-            var theme = saved || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
-            if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
         } catch (e) {}
     })();
     </script>
