@@ -857,17 +857,6 @@
             document.getElementById('levelsTable').style.display = 'table';
             const cbs = listCallbacks; listCallbacks = [];
             cbs.forEach(cb => cb());
-
-            // Creator names on this page link to player profiles, which
-            // needs the leaderboard data too. Fetch it quietly in the
-            // background (it's a no-op if already loaded/loading) and
-            // re-render once it's in, so links "light up" without making
-            // the list page wait on a second request first.
-            if (appData.players.length === 0) {
-                loadLeaderboardData(function () {
-                    if (appData.currentPage === 'list') displayLevels();
-                });
-            }
         });
     }
     // Load leaderboard
@@ -952,7 +941,7 @@
                 +   (level.ClearVideo ? '<a href="' + escapeHtml(level.ClearVideo) + '" target="_blank" style="font-size:0.8rem;color:#c00;"><i class="fab fa-youtube"></i> Clear Video</a>' : '')
                 + '</td>'
                 + '<td>'
-                +   '<div>' + linkifyCreatorNames(level.Creator) + '</div>'
+                +   '<div>' + escapeHtml(level.Creator || 'Unknown') + '</div>'
                 +   '<div style="margin-top:2px;">' + flag + '</div>'
                 + '</td>'
                 + '<td class="level-points">' + Math.round(level.Points || 0) + '</td>'
