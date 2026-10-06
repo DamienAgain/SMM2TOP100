@@ -655,12 +655,30 @@
     // Builds a (lowercase name) -> pid lookup from the loaded leaderboard, so
     // level/creator names elsewhere can be linked to a profile when one
     // exists. Returns an empty Map if the leaderboard hasn't loaded yet.
+    //
+    // Japanese players whose profile has an English translation show up on
+    // the leaderboard as "日本語名 (English Name)" — both languages in one
+    // string. But a level's Creator text on the List sheet is usually
+    // written in just one language, not that combined format. So besides
+    // indexing the full combined name (for anything that does match it
+    // whole), this also indexes the Japanese half and the English half
+    // separately — both pointing at the same player — so a Creator entry in
+    // either language matches.
     function buildPlayerNameIndex() {
         const index = new Map();
         appData.players.forEach(function (p) {
             const dn = p.displayName || '';
-            const namePart = (dn.slice(3, dn.lastIndexOf(' ')).trim() || p.name || '').toLowerCase();
-            if (namePart) index.set(namePart, p.pid);
+            const namePart = dn.slice(3, dn.lastIndexOf(' ')).trim() || p.name || '';
+            if (!namePart) return;
+
+            const translated = namePart.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+            if (translated) {
+                const mainName = translated[1].trim();
+                const altName = translated[2].trim();
+                if (mainName) index.set(mainName.toLowerCase(), p.pid);
+                if (altName) index.set(altName.toLowerCase(), p.pid);
+            }
+            index.set(namePart.toLowerCase(), p.pid);
         });
         return index;
     }
